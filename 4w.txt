@@ -1,0 +1,21 @@
+		Date: 11/3/2023		Hours Worked: 4.4
+Commits:
+		Date: 11/4/2023		Hours Worked: 12.6
+Commits:
+		Date: 11/5/2023		Hours Worked: 8.2
+Commits:
+ *** ASSUMING AT LEAST 1-HOUR ***
+		Date: 11/6/2023		Hours Worked: 1
+Commits:
+ *** ASSUMING AT LEAST 1-HOUR ***
+		Date: 11/7/2023		Hours Worked: 1
+Commits:
+		Date: 11/8/2023		Hours Worked: 7.4
+Commits:
+ *** ASSUMING AT LEAST 1-HOUR ***
+		Date: 11/9/2023		Hours Worked: 1
+Commits:
+		Date: 11/10/2023		Hours Worked: 4
+Commits:
+		Date: 11/11/2023		Hours Worked: 5.7
+Commits:

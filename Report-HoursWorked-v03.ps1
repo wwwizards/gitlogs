@@ -1,14 +1,16 @@
 <#--------------------------------------------------------------------------
-#  SCRIPT:  Report-HoursWorked-v02.ps1
+#  SCRIPT:  Report-HoursWorked-v03.ps1
 #--------------------------------------------------------------------------
 # PURPOSE: Generates a report of Git commits for a specified date range, 
 #          providing daily details (with a minimum of 1-hour work assumption)
 #          and weekly & monthly summaries in chronological order.
-# USAGE:   .\Report-HoursWorked-v02.ps1 -lookback '1m' -SummaryOnly
+# CREATED: 2023-NOV-10 - BY: Joe Negron <jnegron9@fordham.edu>
+# USAGE:   .\Report-HoursWorked-v03.ps1 -lookback '1m' -SummaryOnly
 #--------------------------------------------------------------------------#>
+[CmdletBinding()] #ensure that this scope inherits -Verbose & -Debug flags 
 
 param (
-    [string]$lookback = '1w', # Default to 1 week
+    [string]$lookback = '14d', # Default to 2 weeks
     [switch]$SummaryOnly
 )
 
@@ -59,57 +61,62 @@ function Get-StartDateFromParam {
 }
 
 
-# Determines the start and end dates of the week for a given date
-function Get-WeekStartEnd {
-    param (
-        [DateTime]$date
-    )
-    $dayOfWeek = [System.DayOfWeek]::Monday
-    $diff = ($date.DayOfWeek.value__ - $dayOfWeek.value__)
-    $diff += $diff -lt 0 ? 7 : 0
-    $startOfWeek = $date.AddDays(-$diff).Date
-    $endOfWeek = $startOfWeek.AddDays(6)
-    return @($startOfWeek, $endOfWeek)
-}
+<#--------------------------------------------------------------------------
+#  FUNCTION:  Get-GitLogs
+#--------------------------------------------------------------------------
+# PURPOSE: Fetches Git commit data for a specified date range, providing detailed
+#          logs for debugging and verbose output.
+# PARAMS:  -FromDate (DateTime): The start date for fetching commit data.
+#          -ToDate (DateTime): The end date for fetching commit data.
+# USAGE:   Get-GitLogs -FromDate $startDate -ToDate $endDate -Verbose
+#--------------------------------------------------------------------------#>
 
-function Get-GitCommitData {
+function Get-GitLogs {
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $true)]
         [DateTime]$FromDate,
+
+        [Parameter(Mandatory = $true)]
         [DateTime]$ToDate
     )
-    Write-Host "Fetching Git commits from $FromDate to $ToDate"
 
-    # Execute git log command and capture output
-    $gitCommits = git log --since="$FromDate" --until="$ToDate" --format="%ci|%s"
-
-    # Display the raw output from git log
-    Write-Host "Raw Git Commits Output:"
-    Write-Host $gitCommits
-
-    # Check if the output is empty
-    if (-not $gitCommits) {
-        Write-Host "No commits were found for the specified date range."
-        return @()
+    if ($PSBoundParameters.ContainsKey('Debug')) {
+        Write-Debug "Fetching Git commits from $FromDate to $ToDate"
     }
 
-    # Process git log output
-    $commits = $gitCommits -split '\r?\n' | Where-Object { $_ -ne '' } | ForEach-Object {
-        $parts = $_ -split '\|', 2
-        @{
-            DateTime = [DateTime]::ParseExact($parts[0], 'yyyy-MM-dd HH:mm:ss K', $null)
-            Message  = $parts[1]
-        }
-    } | Group-Object { $_.DateTime.Date }
+    try {
+        # Execute git log command and capture output
+        $gitCommits = git log --since="$FromDate" --until="$ToDate" --format="%ci|%s"
 
-    # Debugging: Display each grouped commit's date and messages
-    foreach ($commitGroup in $commits) {
-        Write-Host "Date: $($commitGroup.Name)"
-        foreach ($commit in $commitGroup.Group) {
-            Write-Host "  Message: $($commit.Message)"
+        if (-not $gitCommits) {
+            Write-Warning "No commits were found for the specified date range."
+            return @()
         }
+
+        # Process git log output
+        $commits = $gitCommits -split '\r?\n' | Where-Object { $_ -ne '' } | ForEach-Object {
+            $parts = $_ -split '\|', 2
+            @{
+                DateTime = [DateTime]::ParseExact($parts[0], 'yyyy-MM-dd HH:mm:ss K', $null)
+                Message  = $parts[1]
+            }
+        } | Group-Object { $_.DateTime.Date }
+
+        # Debugging: Display each grouped commit's date and messages
+        if ($PSBoundParameters.ContainsKey('Verbose')) {
+            foreach ($commitGroup in $commits) {
+                Write-Verbose "Date: $($commitGroup.Name)"
+                foreach ($commit in $commitGroup.Group) {
+                    Write-Verbose "  Message: $($commit.Message)"
+                }
+            }
+        }
+
+        return $commits
+    } catch {
+        Write-Error "An error occurred while fetching Git logs: $_"
     }
-
-    return $commits
 }
 
 <#--------------------------------------------------------------------------
@@ -195,7 +202,7 @@ function Format-Summaries {
 $startDate = Get-StartDateFromParam -TimeParam $lookback
 $endDate = [DateTime]::Now
 
-$commitData = Get-GitCommitData -FromDate $startDate -ToDate $endDate
+$commitData = Get-GitLogs -FromDate $startDate -ToDate $endDate
 $accountingData = Get-Totals -Commits $commitData
 
 if (-not $SummaryOnly -or $lookback -match '^(\d+)(d|m)$') {
