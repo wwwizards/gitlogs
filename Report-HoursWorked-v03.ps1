@@ -79,18 +79,21 @@ function Get-GitLogs {
     # Define the format for the date in git log
     $dateFormat = "yyyy-MM-dd HH:mm:ss"
     $gitCommits = git log --since="$FromDate" --until="$ToDate" --format="format:%cd|%s" --date=format:"%Y-%m-%d %H:%M:%S"
-    Write-Debug ("-" *80)+"RAW:"$gitCommits.+"`nCOUNT:$gitCommits.count"+("-" *80)
+    Write-Debug "`n$("-" *80)`nGIT-LOG-RAW: $gitCommits `nCOUNT:$gitCommits.count `n$("-" *80)"
     # Parse the git log output
     $commits = $gitCommits -split '\r?\n' | Where-Object { $_ -ne '' } | ForEach-Object {
         $parts = $_ -split '\|', 2
-        $dateparts = [DateTime]::ParseExact($parts[0], "yyyy-MM-dd HH:mm:ss", $null) -split '\ ',2
+        $dateparts = [DateTime]::ParseExact($parts[0], $dateFormat, $null) -split '\ ',2
         @{
             #DateTime = [DateTime]::ParseExact($parts[0], $dateFormat, $null)
-            Date = $dateparts[0]
-            Time = $dateparts[1] 
-            Message  = $parts[1]
+            commitDate = $dateparts[0]  
+            commitTime = $dateparts[1]  
+            commitMsg  = $parts[1]      
         }
-    } | Group-Object { $_.DateTime.Date }
+        # Write-Debug "commitDate = $commits.commitDate "
+        # Write-Debug "commitTime = $commitTime" 
+        # Write-Debug "commitMsg  = $commitMsg"
+    } | Group-Object { $_.commitDate }
 
     return $commits
 }
@@ -114,9 +117,9 @@ function Get-Totals {
 
     foreach ($commitGroup in $Commits) {
         # Debugging: Print out types and values
-        Write-Debug "Commit group date (Name): $($commitGroup.Name)"
-        Write-Debug "Date variable type: $([date].GetType().FullName)"
-        Write-Debug "Date variable value: $date"
+        # Write-Debug "Commit group date (Name): $($commitGroup.Name)"
+        # Write-Debug "Date variable type: $([date].GetType().FullName)"
+        # Write-Debug "Date variable value: $date"
     
         if (-not $commitGroup.Name) {
             Write-Verbose "Skipping commit group with null date."
@@ -190,10 +193,6 @@ function Format-DailyDetails {
     }
 }
 
-
-
-
-
 # Generates weekly and monthly summaries of Git commit data
 function Format-Summaries {
     param (
@@ -203,10 +202,10 @@ function Format-Summaries {
     # ...
 }
 
-# Main Script Logic
+
+###### Main Script Logic #####
 $startDate = Get-StartDateFromParam -TimeParam $lookback
 $endDate = [DateTime]::Now
-
 $commitData = Get-GitLogs -FromDate $startDate -ToDate $endDate
 $accountingData = Get-Totals -Commits $commitData
 
