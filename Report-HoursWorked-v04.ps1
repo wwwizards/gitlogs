@@ -258,8 +258,8 @@ function Format-DailyDetails {
         $day = $(Get-Date $date).ToLongDateString()
         $commitGroup = $Commits | Where-Object { $_.Name -eq $date }
         Write-Verbose "Listing ALL git-log commits in Format-DailyDetails for $date"
-        Write-Dashes #--------------------------------------------------------------
-        Write-Output "  Count = $($CommitGroup.count)  | FOR: $($day) `t  `t |  Hours Worked: $hoursWorked"
+        Write-Dashes #-------------------------------------------------------------- 
+        Write-Output "  Count = $($CommitGroup.count)  |   ~ $($day) `t`t |  Hours Worked: $([math]::Round($($hoursWorked/1),1).ToString("F1"))"
         Write-Dashes #--------------------------------------------------------------
         if ($hoursWorked -eq 1) { Write-Output "`t     | *** ONLY ONE RECORD FOUND - ASSUMING AT LEAST 1-HOUR ***" }        
         if (-not $commitGroup) {Write-Debug "No commit data found for date: $date"; continue }
