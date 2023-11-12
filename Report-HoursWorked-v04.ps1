@@ -254,23 +254,18 @@ function Format-DailyDetails {
 
     foreach ($date in $AccountingData.DailyHours.Keys | Sort-Object) {
         $hoursWorked = $AccountingData.DailyHours[$date]
+        $day = $(Get-Date $date).ToLongDateString()
         $dayOfWeek = (Get-Date $date).DayOfWeek
-        Write-Output "`t`tDate: $($date) ($dayOfWeek)`t`tHours Worked: $hoursWorked"
-
-        if ($hoursWorked -eq 1) { Write-Output " *** ASSUMING AT LEAST 1-HOUR ***" }
-        
-        Write-Verbose "Listing commits for date: $date"
-        
         $commitGroup = $Commits | Where-Object { $_.Name -eq $date }
-        if (-not $commitGroup) {
-            Write-Debug "No commit data found for date: $date"
-            continue
-        }
-
-        Write-Output "Commits:"
+        Write-Verbose "Listing ALL git-log commits in Format-DailyDetails for $date"
+        Write-Dashes #--------------------------------------------------------------
+        Write-Output "  Count = $($CommitGroup.count)  | $($day) `t  `t |  Hours Worked: $hoursWorked"
+        Write-Dashes #--------------------------------------------------------------
+        if ($hoursWorked -eq 1) { Write-Output "`t     | *** ONLY ONE RECORD FOUND - ASSUMING AT LEAST 1-HOUR ***" }        
+        if (-not $commitGroup) {Write-Debug "No commit data found for date: $date"; continue }
         foreach ($commit in $commitGroup.Group) {
             $truncatedMessage = $commit.Message.Substring(0, [Math]::Min(65, $commit.Message.Length))
-            Write-Output "- $($commit.CommitTime) | $truncatedMessage"
+            Write-Output " ~ $($commit.CommitTime)  | $truncatedMessage"
         }
     }
 }
