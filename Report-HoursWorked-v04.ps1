@@ -72,25 +72,24 @@ function Get-StartDateFromParam {
 
 <#--------------------------------------------------------------------------
 #  FUNCTION:  Get-GitLogs
-#--------------------------------------------------------------------------#>function Get-GitLogs {
-    [CmdletBinding()]
+#--------------------------------------------------------------------------#>
+function Get-GitLogs {
+    [CmdletBinding()] # enable Debug & Verbose flag inheritance
     param (
         [DateTime]$FromDate,
         [DateTime]$ToDate
     )
-
+    # fetch data from git log cli in the format that we need
+    $gitCommits = git log --since="$FromDate" --until="$ToDate" --format="format:%cd|%s" --date=format:"%Y-%m-%d %H:%M:%S"
+    # add some debuggin info if neeeded - triggered by the -Verbose & -Debug flags from the caller
     Write-Verbose "Fetching Git commits from $FromDate to $ToDate"
     Write-Debug "Preparing to fetch Git logs..."
-
-    $dateFormat = "yyyy-MM-dd HH:mm:ss"
-    $gitCommits = git log --since="$FromDate" --until="$ToDate" --format="format:%cd|%s" --date=format:"%Y-%m-%d %H:%M:%S"
-
     Write-Debug "`n$("-" *80)`nGIT-LOG-RAW: $gitCommits `nCOUNT:$gitCommits.count `n$("-" *80)"
-
+    #format the array for processing
     $commits = $gitCommits -split '\r?\n' | Where-Object { $_ -ne '' } | ForEach-Object {
         $parts = $_ -split '\|', 2
         $dateparts = $parts[0] -split ' ', 2
-
+        # add some error handling - just in case    
         try {
             $commitDate = [DateTime]::ParseExact($dateparts[0], 'yyyy-MM-dd', $null)
             $commitTime = [DateTime]::ParseExact($dateparts[1], 'HH:mm:ss', $null).TimeOfDay
@@ -98,22 +97,21 @@ function Get-StartDateFromParam {
             Write-Debug "Failed to parse date or time from commit log: $_"
             return $null
         }
-
+        # format the return objects
         $commitObject = @{
             CommitDate = $commitDate
             CommitTime = $commitTime
             Message    = $parts[1]
         }
-
         # Debug line to check each commit object
         Write-Debug "Processed commit: $($commitObject.CommitDate) - $($commitObject.CommitTime) - $($commitObject.Message)"
         
         $commitObject
+    # pipe the whole array through a grouper & filter any nulls 
     } | Where-Object { $_ -ne $null } | Group-Object { $_.CommitDate }
 
     return $commits
 }
-
 
 <#--------------------------------------------------------------------------
 #  FUNCTION:  Get-Totals
@@ -139,11 +137,11 @@ function Get-Totals {
             continue
         }
 
-        $hoursWorked = CalculateHours -CommitGroup $commitGroup
+        $hoursWorked = Update-Hours -CommitGroup $commitGroup
 
         $dailyHours[$commitDate] = $hoursWorked
-        UpdateWeeklyHours -Date $commitDate -Hours $hoursWorked -WeeklyHours ([ref]$weeklyHours)
-        UpdateMonthlyHours -Date $commitDate -Hours $hoursWorked -MonthlyHours ([ref]$monthlyHours)
+        Update-WeeklyHours -Date $commitDate -Hours $hoursWorked -WeeklyHours ([ref]$weeklyHours)
+        Update-MonthlyHours -Date $commitDate -Hours $hoursWorked -MonthlyHours ([ref]$monthlyHours)
     }
 
     return @{
@@ -154,7 +152,7 @@ function Get-Totals {
 }
 
 
-function CalculateHours {
+function Update-Hours {
     param (
         [Object]$CommitGroup
     )
@@ -170,14 +168,14 @@ function CalculateHours {
 }
 
 <#--------------------------------------------------------------------------
-#  FUNCTION:  UpdateWeeklyHours
+#  FUNCTION:  Update-WeeklyHours
 #--------------------------------------------------------------------------
 # PURPOSE: Updates the weekly hours worked based on a given date and hours.
 # PARAMS:  -Date - The date of the commits being processed.
 #          -Hours - The hours worked on the given date.
 #          -WeeklyHours - A reference to the hashtable tracking weekly hours.
 #--------------------------------------------------------------------------#>
-function UpdateWeeklyHours {
+function Update-WeeklyHours {
     [CmdletBinding()]
     param (
         [DateTime]$Date,
@@ -185,31 +183,38 @@ function UpdateWeeklyHours {
         [ref]$WeeklyHours
     )
 
-    # Extract the hashtable from the reference
     $weeklyHoursHashtable = $WeeklyHours.Value
 
     $weekOfYear = [Globalization.CultureInfo]::CurrentCulture.Calendar.GetWeekOfYear($Date, [Globalization.CalendarWeekRule]::FirstDay, [DayOfWeek]::Monday)
     $weekKey = "$($Date.Year)-Week$weekOfYear"
-    
+
+    # Calculate start and end of the week
+    $dayOfWeek = [int]$Date.DayOfWeek
+    $weekStart = $Date.AddDays(-$dayOfWeek + 1) # Assuming week starts on Monday
+    $weekEnd = $weekStart.AddDays(6) # End of the week
+
     if (-not $weeklyHoursHashtable.ContainsKey($weekKey)) {
-        $weeklyHoursHashtable[$weekKey] = @{ 'Hours' = 0 }
+        $weeklyHoursHashtable[$weekKey] = @{
+            'Hours' = 0
+            'Start' = $weekStart
+            'End'   = $weekEnd
+        }
     }
 
     $weeklyHoursHashtable[$weekKey]['Hours'] += $Hours
 
-    # Update the reference with the modified hashtable
     $WeeklyHours.Value = $weeklyHoursHashtable
 }
 
 <#--------------------------------------------------------------------------
-#  FUNCTION:  UpdateMonthlyHours
+#  FUNCTION:  Update-MonthlyHours
 #--------------------------------------------------------------------------
 # PURPOSE: Updates the monthly hours worked based on a given date and hours.
 # PARAMS:  -Date - The date of the commits being processed.
 #          -Hours - The hours worked on the given date.
 #          -MonthlyHours - A reference to the hashtable tracking monthly hours.
 #--------------------------------------------------------------------------#>
-function UpdateMonthlyHours {
+function Update-MonthlyHours {
     [CmdletBinding()]
     param (
         [DateTime]$Date,
@@ -251,11 +256,10 @@ function Format-DailyDetails {
     foreach ($date in $AccountingData.DailyHours.Keys | Sort-Object { [DateTime]::Parse($_) }) {
         $hoursWorked = $AccountingData.DailyHours[$date]
         $day = $(Get-Date $date).ToLongDateString()
-        $dayOfWeek = (Get-Date $date).DayOfWeek
         $commitGroup = $Commits | Where-Object { $_.Name -eq $date }
         Write-Verbose "Listing ALL git-log commits in Format-DailyDetails for $date"
         Write-Dashes #--------------------------------------------------------------
-        Write-Output "  Count = $($CommitGroup.count)  | $($day) `t  `t |  Hours Worked: $hoursWorked"
+        Write-Output "  Count = $($CommitGroup.count)  | FOR: $($day) `t  `t |  Hours Worked: $hoursWorked"
         Write-Dashes #--------------------------------------------------------------
         if ($hoursWorked -eq 1) { Write-Output "`t     | *** ONLY ONE RECORD FOUND - ASSUMING AT LEAST 1-HOUR ***" }        
         if (-not $commitGroup) {Write-Debug "No commit data found for date: $date"; continue }
@@ -267,31 +271,54 @@ function Format-DailyDetails {
     Write-Dashes "`n`n" #-------------------------------------------------------------------
 }
 
-# Function to generate weekly and monthly summaries of Git commit data
+<#--------------------------------------------------------------------------
+#  FUNCTION:  Format-Summaries
+#--------------------------------------------------------------------------
+# PURPOSE: Generates a summary report of Git commit data, providing weekly
+#          and monthly aggregates of hours worked. It displays a formatted
+#          summary for each week and month within the specified date range,
+#          along with the total hours worked for each period.
+# PARAMS:  -AccountingData (Object): The calculated hours for each day,
+#          week, and month.
+# USAGE:   This function is called within the main script to display
+#          summary information of Git commits. It should be used after
+#          collecting and processing commit data with other functions.
+#--------------------------------------------------------------------------#>
 function Format-Summaries {
     param (
         [Object]$AccountingData
     )
+
     # Output Weekly Summary
-    Write-Dashes; Write-Host "Weekly Hours Summary:"; Write-Dashes
+    Write-Output "`n"
+    Write-Dashes #-------------------------------------------------------------------------- 
+    Write-Output "`t ###   FORDHAM IT - DEVOPS: WEEKLY HOURS SUMMARY REPORT   ###"
+    Write-Dashes #--------------------------------------------------------------------------
     foreach ($week in $AccountingData.WeeklyHours.Keys | Sort-Object) {
         $weekData = $AccountingData.WeeklyHours[$week]
-        $weekStart = $weekData['Start'].ToShortDateString()
-        $weekEnd = $weekData['End'].ToShortDateString()
-        $formattedWeek = "{0} ({1} - {2}): {3:N1} hours" -f $week, $weekStart, $weekEnd, $weekData['Hours']
-        Write-Host "`t$formattedWeek"
+
+        # Null check for 'Start' and 'End'
+        $weekStart = if ($weekData['Start']) { $weekData['Start'].ToShortDateString() } else { "N/A" }
+        $weekEnd = if ($weekData['End']) { $weekData['End'].ToShortDateString() } else { "N/A" }
+
+        $formattedWeek = " {0}  |  Date Range: {1} to {2}`t |  Hours Worked: {3:N1}" -f $week, $weekStart, $weekEnd, $weekData['Hours']
+        Write-Output "$formattedWeek"
     }
+    Write-Dashes "`n`n" #-------------------------------------------------------------------
+
 
     # Output Monthly Summary
-    Write-Host; Write-Dashes; Write-Host "Monthly Hours Summary:"; Write-Dashes
+    Write-Output "`n" 
+    Write-Dashes #-------------------------------------------------------------------------- 
+    Write-Output "`t ###   FORDHAM IT - DEVOPS: MONTHLY HOURS SUMMARY REPORT   ###"
+    Write-Dashes #--------------------------------------------------------------------------
     foreach ($month in $AccountingData.MonthlyHours.Keys | Sort-Object) {
         $monthNumber = [int]$month.Split('-')[1]
         $monthName = [CultureInfo]::CurrentCulture.DateTimeFormat.GetMonthName($monthNumber)
-        $formattedMonth = "{0} ({1}): {2:N1} hours" -f $month, $monthName, $AccountingData.MonthlyHours[$month]
-        Write-Host "`t$formattedMonth"
-
+        $formattedMonth = "   {0}    |  Date Range: {1}  `t  `t`t |  Hours Worked: {2:N1} " -f $month, $monthName, $AccountingData.MonthlyHours[$month]
+        Write-Output "$formattedMonth"
     }
-    Write-Dashes "`n`n" #-------------------------------------------------------------------
+    Write-Dashes "`n" #-------------------------------------------------------------------
 }
 
 # Main Script Logic
