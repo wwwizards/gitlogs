@@ -219,7 +219,6 @@ function UpdateMonthlyHours {
 
     # Extract the hashtable from the reference
     $monthlyHoursHashtable = $MonthlyHours.Value
-
     $monthKey = $Date.ToString('yyyy-MM')
 
     if (-not $monthlyHoursHashtable.ContainsKey($monthKey)) {
@@ -231,9 +230,6 @@ function UpdateMonthlyHours {
     # Update the reference with the modified hashtable
     $MonthlyHours.Value = $monthlyHoursHashtable
 }
-
-
-
 
 <#--------------------------------------------------------------------------
 #  FUNCTION:  Format-DailyDetails
@@ -251,8 +247,8 @@ function Format-DailyDetails {
         [Object]$AccountingData,
         [Object]$Commits
     )
-
-    foreach ($date in $AccountingData.DailyHours.Keys | Sort-Object) {
+    Write-Output "`n`n`t ###   FORDHAM IT - DEVOPS: GIT-LOG DAILY DETAIL REPORT   ###"
+    foreach ($date in $AccountingData.DailyHours.Keys | Sort-Object { [DateTime]::Parse($_) }) {
         $hoursWorked = $AccountingData.DailyHours[$date]
         $day = $(Get-Date $date).ToLongDateString()
         $dayOfWeek = (Get-Date $date).DayOfWeek
@@ -268,18 +264,34 @@ function Format-DailyDetails {
             Write-Output " ~ $($commit.CommitTime)  | $truncatedMessage"
         }
     }
+    Write-Dashes "`n`n" #-------------------------------------------------------------------
 }
-
-
-
 
 # Function to generate weekly and monthly summaries of Git commit data
 function Format-Summaries {
     param (
         [Object]$AccountingData
     )
-    # Output Weekly and Monthly Summaries
-    # ...
+    # Output Weekly Summary
+    Write-Dashes; Write-Host "Weekly Hours Summary:"; Write-Dashes
+    foreach ($week in $AccountingData.WeeklyHours.Keys | Sort-Object) {
+        $weekData = $AccountingData.WeeklyHours[$week]
+        $weekStart = $weekData['Start'].ToShortDateString()
+        $weekEnd = $weekData['End'].ToShortDateString()
+        $formattedWeek = "{0} ({1} - {2}): {3:N1} hours" -f $week, $weekStart, $weekEnd, $weekData['Hours']
+        Write-Host "`t$formattedWeek"
+    }
+
+    # Output Monthly Summary
+    Write-Host; Write-Dashes; Write-Host "Monthly Hours Summary:"; Write-Dashes
+    foreach ($month in $AccountingData.MonthlyHours.Keys | Sort-Object) {
+        $monthNumber = [int]$month.Split('-')[1]
+        $monthName = [CultureInfo]::CurrentCulture.DateTimeFormat.GetMonthName($monthNumber)
+        $formattedMonth = "{0} ({1}): {2:N1} hours" -f $month, $monthName, $AccountingData.MonthlyHours[$month]
+        Write-Host "`t$formattedMonth"
+
+    }
+    Write-Dashes "`n`n" #-------------------------------------------------------------------
 }
 
 # Main Script Logic
