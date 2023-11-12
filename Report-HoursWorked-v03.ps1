@@ -74,29 +74,23 @@ function Get-GitLogs {
         [DateTime]$FromDate,
         [DateTime]$ToDate
     )
-    Write-Verbose "Fetching Git commits from $FromDate to $ToDate"
+    Write-Host "Fetching Git commits from $FromDate to $ToDate"
 
-    # Fetch git logs with a specific format
-    $gitCommits = git log --since="$FromDate" --until="$ToDate" --format="%ci|%s"
-    Write-Debug "Raw Git Commits Output: $gitCommits"
+    # Define the format for the date in git log
+    $dateFormat = "yyyy-MM-dd HH:mm:ss"
+    $gitCommits = git log --since="$FromDate" --until="$ToDate" --format="format:%cd|%s" --date=format:"%Y-%m-%d %H:%M:%S"
 
-    if (-not $gitCommits) {
-        Write-Host "No commits were found for the specified date range."
-        return @()
-    }
-
-    # Process git log output
+    # Parse the git log output
     $commits = $gitCommits -split '\r?\n' | Where-Object { $_ -ne '' } | ForEach-Object {
         $parts = $_ -split '\|', 2
         @{
-            DateTime = [DateTime]::ParseExact($parts[0], 'yyyy-MM-dd HH:mm:ss K', $null)
+            DateTime = [DateTime]::ParseExact($parts[0], $dateFormat, $null)
             Message  = $parts[1]
         }
     } | Group-Object { $_.DateTime.Date }
 
     return $commits
 }
-    
 
 <#--------------------------------------------------------------------------
 #  FUNCTION:  Get-Totals
@@ -116,18 +110,18 @@ function Get-Totals {
     $monthlyHours = @{}
 
     foreach ($commitGroup in $Commits) {
+        # Debugging: Print out types and values
+        Write-Debug "Commit group date (Name): $($commitGroup.Name)"
+        Write-Debug "Date variable type: $([date].GetType().FullName)"
+        Write-Debug "Date variable value: $date"
+    
         if (-not $commitGroup.Name) {
             Write-Verbose "Skipping commit group with null date."
             continue
         }
-
-        try {
-            $date = [DateTime]$commitGroup.Name
-            Write-Debug "Successfully parsed date: $date"
-        } catch {
-            Write-Debug "Error parsing date from commit group name: $($commitGroup.Name)"
-            continue
-        }
+    
+        $date = [DateTime]$commitGroup.Name.Date
+        Write-Debug "Processing date: $date"
 
         $firstCommit = ($commitGroup.Group | Sort-Object DateTime)[0].DateTime
         $lastCommit = ($commitGroup.Group | Sort-Object DateTime)[-1].DateTime
@@ -187,10 +181,13 @@ function Format-DailyDetails {
         Write-Output "Commits:"
         $commitGroup = $Commits | Where-Object { $_.Name -eq $date }
         foreach ($commit in $commitGroup.Group) {
-            Write-Output "- $($commit.DateTime.ToShortTimeString()) | $($commit.Message)"
+            $truncatedMessage = $commit.Message.Substring(0, [Math]::Min(65, $commit.Message.Length))
+            Write-Output "- $($commit.DateTime.ToShortTimeString()) | $truncatedMessage"
         }
     }
 }
+
+
 
 
 
