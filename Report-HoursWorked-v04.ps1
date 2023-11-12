@@ -19,6 +19,45 @@ function Write-Dashes {
     return '-' * 80
 }
 
+# Import the Active Directory module
+Import-Module ActiveDirectory
+
+function Get-UserData {
+
+    # Get the current logged-in username
+    $username = $env:USERNAME
+
+    # Retrieve user details from AD
+    $userDetails = Get-ADUser -Identity $username -Properties DisplayName, Mail
+
+    # Output user details
+    Write-Output " User: $username"
+    Write-Output " Name: $($userDetails.DisplayName)"
+    Write-Output " Mail: $($userDetails.Mail)"
+}
+
+function Put-ReportHeader {
+    # Get the remote repository URL
+    $repoUrl = git config --get remote.origin.url
+    # Check if the URL contains 'https://' and '@'
+    if ($repoUrl -like 'https://*' -and $repoUrl -like '*@*') {
+        # Remove the substring between 'https://' and '@'
+        $cleanRepoUrl = $repoUrl -replace 'https://.*@', 'https://'
+    } else {
+        # If the URL doesn't match the expected pattern, use it as is
+        $cleanRepoUrl = $repoUrl
+    }
+    Write-Output "`n"
+    Write-Dashes #--------------------------------------------------------------------------
+    Write-Output "`t ###   FORDHAM IT - DEVOPS: AUTOMATION TEAM REPORT  ###"
+    Write-Dashes #--------------------------------------------------------------------------
+    Get-UserData
+    Write-Output " Date: $(Get-Date -Format 'dddd, MMMM dd, yyyy')"
+    Write-Output " Path: //$(HOSTNAME)/$(git rev-parse --show-toplevel)"
+    Write-Output "  URL: $cleanRepoUrl ~Branch: $(git rev-parse --abbrev-ref HEAD)"
+}    
+
+
 <#--------------------------------------------------------------------------
 #  FUNCTION:  Get-StartDateFromParam
 #--------------------------------------------------------------------------
@@ -252,7 +291,9 @@ function Format-DailyDetails {
         [Object]$AccountingData,
         [Object]$Commits
     )
-    Write-Output "`n`n`t ###   FORDHAM IT - DEVOPS: GIT-LOG DAILY DETAIL REPORT   ###"
+    Write-Output "`n"
+    Write-Dashes #--------------------------------------------------------------------------
+    Write-Output "`t ###   FORDHAM IT - DEVOPS: GIT-LOG DAILY DETAIL REPORT   ###"
     foreach ($date in $AccountingData.DailyHours.Keys | Sort-Object { [DateTime]::Parse($_) }) {
         $hoursWorked = $AccountingData.DailyHours[$date]
         $day = $(Get-Date $date).ToLongDateString()
@@ -289,10 +330,23 @@ function Format-Summaries {
         [Object]$AccountingData
     )
 
-    # Output Weekly Summary
-    Write-Output "`n"
+    # Output Monthly Summary
+    Write-Output "" 
     Write-Dashes #-------------------------------------------------------------------------- 
-    Write-Output "`t ###   FORDHAM IT - DEVOPS: WEEKLY HOURS SUMMARY REPORT   ###"
+    Write-Output "`t ###   GIT-CODE CHECK-IN MONTHLY HOURS SUMMARY REPORT   ###"
+    Write-Dashes #--------------------------------------------------------------------------
+    foreach ($month in $AccountingData.MonthlyHours.Keys | Sort-Object) {
+        $monthNumber = [int]$month.Split('-')[1]
+        $monthName = [CultureInfo]::CurrentCulture.DateTimeFormat.GetMonthName($monthNumber)
+        $formattedMonth = "   {0}    |  Date Range: {1}  `t  `t`t |  Hours Worked: {2:N1} " -f $month, $monthName, $AccountingData.MonthlyHours[$month]
+        Write-Output "$formattedMonth"
+    }
+    Write-Dashes "`n" #-------------------------------------------------------------------
+
+    # Output Weekly Summary
+    Write-Output ""
+    Write-Dashes #-------------------------------------------------------------------------- 
+    Write-Output "`t ###   GIT-CODE CHECK-IN WEEKLY HOURS SUMMARY REPORT   ###"
     Write-Dashes #--------------------------------------------------------------------------
     foreach ($week in $AccountingData.WeeklyHours.Keys | Sort-Object) {
         $weekData = $AccountingData.WeeklyHours[$week]
@@ -304,26 +358,15 @@ function Format-Summaries {
         $formattedWeek = " {0}  |  Date Range: {1} to {2}`t |  Hours Worked: {3:N1}" -f $week, $weekStart, $weekEnd, $weekData['Hours']
         Write-Output "$formattedWeek"
     }
-    Write-Dashes "`n`n" #-------------------------------------------------------------------
-
-
-    # Output Monthly Summary
-    Write-Output "`n" 
-    Write-Dashes #-------------------------------------------------------------------------- 
-    Write-Output "`t ###   FORDHAM IT - DEVOPS: MONTHLY HOURS SUMMARY REPORT   ###"
-    Write-Dashes #--------------------------------------------------------------------------
-    foreach ($month in $AccountingData.MonthlyHours.Keys | Sort-Object) {
-        $monthNumber = [int]$month.Split('-')[1]
-        $monthName = [CultureInfo]::CurrentCulture.DateTimeFormat.GetMonthName($monthNumber)
-        $formattedMonth = "   {0}    |  Date Range: {1}  `t  `t`t |  Hours Worked: {2:N1} " -f $month, $monthName, $AccountingData.MonthlyHours[$month]
-        Write-Output "$formattedMonth"
-    }
     Write-Dashes "`n" #-------------------------------------------------------------------
+
 }
 
 # Main Script Logic
 $startDate = Get-StartDateFromParam -TimeParam $lookback
 $endDate = [DateTime]::Now
+
+Put-ReportHeader
 Write-Verbose "Start Date: $startDate, End Date: $endDate"
 
 $commitData = Get-GitLogs -FromDate $startDate -ToDate $endDate
@@ -333,9 +376,9 @@ if (-not $commitData) {
 }
 
 $accountingData = Get-Totals -Commits $commitData
+Format-Summaries -AccountingData $accountingData
 
 if (-not $SummaryOnly -or $lookback -match '^(\d+)(d|m)$') {
     Format-DailyDetails -AccountingData $accountingData -Commits $commitData
 }
 
-Format-Summaries -AccountingData $accountingData
