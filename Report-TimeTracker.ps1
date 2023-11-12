@@ -36,7 +36,7 @@ function Get-UserData {
     Write-Output " Mail: $($userDetails.Mail)"
 }
 
-function Put-ReportHeader {
+function Set-ReportHeader {
     # Get the remote repository URL
     $repoUrl = git config --get remote.origin.url
     # Check if the URL contains 'https://' and '@'
@@ -364,7 +364,7 @@ function Format-Summaries {
 $startDate = Get-StartDateFromParam -TimeParam $lookback
 $endDate = [DateTime]::Now
 
-Put-ReportHeader
+Set-ReportHeader
 Write-Verbose "Start Date: $startDate, End Date: $endDate"
 
 $commitData = Get-GitLogs -FromDate $startDate -ToDate $endDate
