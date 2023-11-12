@@ -79,12 +79,15 @@ function Get-GitLogs {
     # Define the format for the date in git log
     $dateFormat = "yyyy-MM-dd HH:mm:ss"
     $gitCommits = git log --since="$FromDate" --until="$ToDate" --format="format:%cd|%s" --date=format:"%Y-%m-%d %H:%M:%S"
-
+    Write-Debug ("-" *80)+"RAW:"$gitCommits.+"`nCOUNT:$gitCommits.count"+("-" *80)
     # Parse the git log output
     $commits = $gitCommits -split '\r?\n' | Where-Object { $_ -ne '' } | ForEach-Object {
         $parts = $_ -split '\|', 2
+        $dateparts = [DateTime]::ParseExact($parts[0], "yyyy-MM-dd HH:mm:ss", $null) -split '\ ',2
         @{
-            DateTime = [DateTime]::ParseExact($parts[0], $dateFormat, $null)
+            #DateTime = [DateTime]::ParseExact($parts[0], $dateFormat, $null)
+            Date = $dateparts[0]
+            Time = $dateparts[1] 
             Message  = $parts[1]
         }
     } | Group-Object { $_.DateTime.Date }
