@@ -322,7 +322,7 @@ function Format-DailyDetails {
         $commitGroup = $Commits | Where-Object { $_.Name -eq $date }
         Write-Verbose "Listing ALL git-log commits in Format-DailyDetails for $date"
         Write-Dashes #-------------------------------------------------------------- 
-        Write-Output "  Count = $($CommitGroup.count)  |   ~ $($day) `t`t |  Hours Worked: $([math]::Round($($hoursWorked/1),1).ToString("F1"))"
+        Write-Output "  Count = $($CommitGroup.count)  |   ~ $($day) `t`t |  Hours Logged: $([math]::Round($($hoursWorked/1),1).ToString("F1"))"
         Write-Dashes #--------------------------------------------------------------
         if ($hoursWorked -eq 1) { Write-Output "`t     | *** ONLY ONE RECORD FOUND - ASSUMING AT LEAST 1-HOUR ***" }        
         if (-not $commitGroup) {Write-Debug "No commit data found for date: $date"; continue }
@@ -360,7 +360,7 @@ function Format-Summaries {
     foreach ($month in $AccountingData.MonthlyHours.Keys | Sort-Object) {
         $monthNumber = [int]$month.Split('-')[1]
         $monthName = [CultureInfo]::CurrentCulture.DateTimeFormat.GetMonthName($monthNumber)
-        $formattedMonth = "   {0}    |  Date Range: {1}  `t  `t`t |  Hours Worked: {2:N1} " -f $month, $monthName, $AccountingData.MonthlyHours[$month]
+        $formattedMonth = "   {0}    |  Date Range: {1}  `t  `t`t |  Hours Logged: {2:N1} " -f $month, $monthName, $AccountingData.MonthlyHours[$month]
         Write-Output "$formattedMonth"
     }
     Write-Dashes "`n" #-------------------------------------------------------------------
@@ -377,7 +377,7 @@ function Format-Summaries {
         $weekStart = if ($weekData['Start']) { $weekData['Start'].ToShortDateString() } else { "N/A" }
         $weekEnd = if ($weekData['End']) { $weekData['End'].ToShortDateString() } else { "N/A" }
 
-        $formattedWeek = " {0}  |  Date Range: {1} to {2}`t |  Hours Worked: {3:N1}" -f $week, $weekStart, $weekEnd, $weekData['Hours']
+        $formattedWeek = " {0}  |  Date Range: {1} to {2}`t |  Hours Logged: {3:N1}" -f $week, $weekStart, $weekEnd, $weekData['Hours']
         Write-Output "$formattedWeek"
     }
     Write-Dashes "`n" #-------------------------------------------------------------------
