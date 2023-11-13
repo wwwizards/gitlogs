@@ -15,27 +15,49 @@ param (
 )
 
 # Function to create a string of dashes for visual separation in output
-function Write-Dashes {
-    return '-' * 80
-}
+function Write-Dashes {return '-' * 80}
 
 # Import the Active Directory module
 Import-Module ActiveDirectory
 
+<#--------------------------------------------------------------------------
+#  FUNCTION:  GetUserDetails
+#---------------------------------------------------------------------------
+# PURPOSE: Retrieves the user's full name and email address. If AD information
+#          is not available, prompts the user for their details and saves them
+#          as environment variables for subsequent use.
+# RETURNS: Outputs the user's full name and email address.
+#--------------------------------------------------------------------------#>
 function Get-UserData {
+    $User = $env:Username
+    $login = $env:Username -replace '^a-', '' # Removes the 'a-'(if needed)
+    
+    try {
+        # Attempt to get user details from Active Directory
+        $AD = Get-ADUser -Identity $login -Properties DisplayName, EmailAddress
+        $Name = $AD.DisplayName
+        $Mail = $AD.EmailAddress
+    } catch {
+        # AD lookup failed; prompt the user for details
+        if (-not $fullName -or -not $email) {
+            $Name = Read-Host -Prompt "Enter your full name"
+            $Mail = Read-Host -Prompt "Enter your email address"
 
-    # Get the current logged-in username
-    $username = $env:USERNAME
-
-    # Retrieve user details from AD
-    $userDetails = Get-ADUser -Identity $username -Properties DisplayName, Mail
+            # Save the details as environment variables
+            [System.Environment]::SetEnvironmentVariable("USER_NAME", $Name, "User")
+            [System.Environment]::SetEnvironmentVariable("USER_MAIL", $Mail, "User")
+        }
+    }
 
     # Output user details
-    Write-Output " User: $username"
-    Write-Output " Name: $($userDetails.DisplayName)"
-    Write-Output " Mail: $($userDetails.Mail)"
+    Write-Output "   User: $($User)"
+    Write-Output "   Name: $($Name)"
+    Write-Output "   Mail: $($Mail)"
 }
 
+<#--------------------------------------------------------------------------
+#  FUNCTION:  Set-ReportHeader (self-explanatory)
+#-------------------------------------------------------------------------#>
 function Set-ReportHeader {
     # Get the remote repository URL
     $repoUrl = git config --get remote.origin.url
@@ -52,9 +74,10 @@ function Set-ReportHeader {
     Write-Output "`t ###   FORDHAM IT - DEVOPS: AUTOMATION TEAM REPORT  ###"
     Write-Dashes #--------------------------------------------------------------------------
     Get-UserData
-    Write-Output " Date: $(Get-Date -Format 'dddd, MMMM dd, yyyy')"
-    Write-Output " Path: //$(HOSTNAME)/$(git rev-parse --show-toplevel)"
-    Write-Output "  URL: $cleanRepoUrl ~Branch: $(git rev-parse --abbrev-ref HEAD)"
+    Write-Output "   Date: $(Get-Date -Format 'dddd, MMMM dd, yyyy')"
+    Write-Output "  Local: //$(HOSTNAME)/$(git rev-parse --show-toplevel)"
+    Write-Output " Remote: $cleanRepoUrl "
+    Write-Output " Branch: $(git rev-parse --abbrev-ref HEAD)"
 }    
 
 <#--------------------------------------------------------------------------
@@ -366,17 +389,9 @@ $endDate = [DateTime]::Now
 
 Set-ReportHeader
 Write-Verbose "Start Date: $startDate, End Date: $endDate"
-
 $commitData = Get-GitLogs -FromDate $startDate -ToDate $endDate
-if (-not $commitData) {
-    Write-Error "No commit data found for the given date range."
-    exit
-}
-
+if (-not $commitData) { Write-Error "No commit data found for the given date range."; exit }
 $accountingData = Get-Totals -Commits $commitData
 Format-Summaries -AccountingData $accountingData
-
-if (-not $SummaryOnly -or $lookback -match '^(\d+)(d|m)$') {
-    Format-DailyDetails -AccountingData $accountingData -Commits $commitData
-}
+if (-not $SummaryOnly -or $lookback -match '^(\d+)(d|m)$') {Format-DailyDetails -AccountingData $accountingData -Commits $commitData}
 
