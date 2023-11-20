@@ -1,0 +1,29 @@
+
+
+--------------------------------------------------------------------------------
+	 ###   FORDHAM IT - DEVOPS: AUTOMATION TEAM REPORT  ###
+--------------------------------------------------------------------------------
+   User: a-jnegron9
+   Name: Joe Negron
+   Mail: jnegron9@fordham.edu
+   Date: Sunday, November 19, 2023
+  Local: //it-auto-admin01/D:/PROJECTS/automation/F5
+ Remote: https://dev.azure.com/FITCloudServices/Automation/_git/F5 
+ Branch: main
+
+  Report: .\Report-TimeTracker.ps1 1m -summary >23-1119JN-Monthly-Summary-Timesheet.txt  
+   Range: Thursday, October 19, 2023 through Sunday, November 19, 2023
+
+--------------------------------------------------------------------------------
+	 ###   GIT-CODE CHECK-IN MONTHLY HOURS SUMMARY REPORT   ###
+--------------------------------------------------------------------------------
+   2023-11    |  Date Range: November  	  		 |  Hours Logged: 116.8 
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+	 ###   GIT-CODE CHECK-IN WEEKLY HOURS SUMMARY REPORT   ###
+--------------------------------------------------------------------------------
+ 2023-Week45  |  Date Range: 10/30/2023 to 11/5/2023	 |  Hours Logged: 25.2
+ 2023-Week46  |  Date Range: 11/6/2023 to 11/12/2023	 |  Hours Logged: 43.8
+ 2023-Week47  |  Date Range: 11/13/2023 to 11/19/2023	 |  Hours Logged: 47.8
+--------------------------------------------------------------------------------
