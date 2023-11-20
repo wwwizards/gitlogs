@@ -119,14 +119,14 @@ function Get-StartDateFromParam {
         $quantity = $matches[1]
         $unit = $matches[2]
         switch ($unit) {
-            'd' { $calculatedDate = $startDate.AddDays(-$quantity) }
-            'w' { $calculatedDate = $startDate.AddDays(-7 * $quantity) }
-            'm' { $calculatedDate = $startDate.AddMonths(-$quantity) }
-            'y' { $calculatedDate = $startDate.AddYears(-$quantity) }
-            default { $calculatedDate = $startDate }
+            'd' { $relativeStartDate = $startDate.AddDays(-$quantity) }
+            'w' { $relativeStartDate = $startDate.AddDays(-7 * $quantity) }
+            'm' { $relativeStartDate = $startDate.AddMonths(-$quantity) }
+            'y' { $relativeStartDate = $startDate.AddYears(-$quantity) }
+            default { $relativeStartDate = $startDate }
         }
-        Write-Verbose "Parsed relative time period, calculated date: $calculatedDate"
-        return $calculatedDate
+        Write-Verbose "Parsed relative time period, calculated date: $relativeStartDate"
+        return $relativeStartDate
     }
     # If no match, return current date
     Write-Debug "No matching format found, returning current date: $startDate"
@@ -420,7 +420,9 @@ $startDate = Get-StartDateFromParam -TimeParam $lookback
 $endDate = [DateTime]::Now
 
 Set-ReportHeader
-Write-Verbose "Start Date: $startDate, End Date: $endDate"
+Write-Output "`n  Report: $($MyInvocation.Line.ToString()) "
+Write-Output "   Range: $($startDate.ToLongDateString()) through $($endDate.ToLongDateString())"
+
 $commitData = Get-GitLogs -FromDate $startDate -ToDate $endDate
 if (-not $commitData) { Write-Error "No commit data found for the given date range."; exit }
 $accountingData = Get-Totals -Commits $commitData
