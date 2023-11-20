@@ -11,7 +11,9 @@
 
 param (
     [string]$lookback = '14d', # Default to 2 weeks
-    [switch]$SummaryOnly
+    [switch]$summary,
+    [switch]$quick,
+    [switch]$full
 )
 
 # Function to create a string of dashes for visual separation in output
@@ -335,6 +337,36 @@ function Format-DailyDetails {
 }
 
 <#--------------------------------------------------------------------------
+#  FUNCTION:  Format-DailySummary
+#--------------------------------------------------------------------------
+# PURPOSE: Formats and outputs the detailed daily information of Git commits,
+#          including the commit time and message.
+# PARAMS:  -AccountingData (Object): The calculated hours for each day.
+#          -Commits (Object): Grouped Git commit data with dates, times, and messages.
+# RETURNS: Outputs the formatted details of daily Git commits.
+# USAGE:   Called within the main script to display detailed commit information.
+#--------------------------------------------------------------------------#>
+function Format-DailySummary {
+    [CmdletBinding()]
+    param (
+        [Object]$AccountingData,
+        [Object]$Commits
+    )
+    Write-Output "`n"
+    Write-Dashes #--------------------------------------------------------------------------
+    Write-Output "`t ###   FORDHAM IT - DEVOPS: GIT-LOG DAILY DETAIL REPORT   ###"
+    Write-Dashes #-------------------------------------------------------------- 
+    foreach ($date in $AccountingData.DailyHours.Keys | Sort-Object { [DateTime]::Parse($_) }) {
+        $hoursWorked = $AccountingData.DailyHours[$date]
+        $day = $(Get-Date $date).ToLongDateString()
+        $commitGroup = $Commits | Where-Object { $_.Name -eq $date }
+        Write-Verbose "Listing ALL git-log commits in Format-DailySummary for $date"
+        Write-Output "  Commits = $("{0:D2}" -f $CommitGroup.count)  | $($day) `t `t |  Hours Logged: $("{0:00.0}" -f $hoursWorked) "
+    }
+    Write-Dashes "`n`n" #-------------------------------------------------------------------
+}
+
+<#--------------------------------------------------------------------------
 #  FUNCTION:  Format-Summaries
 #--------------------------------------------------------------------------
 # PURPOSE: Generates a summary report of Git commit data, providing weekly
@@ -393,5 +425,8 @@ $commitData = Get-GitLogs -FromDate $startDate -ToDate $endDate
 if (-not $commitData) { Write-Error "No commit data found for the given date range."; exit }
 $accountingData = Get-Totals -Commits $commitData
 Format-Summaries -AccountingData $accountingData
-if (-not $SummaryOnly -or $lookback -match '^(\d+)(d|m)$') {Format-DailyDetails -AccountingData $accountingData -Commits $commitData}
+
+if ($full -or $lookback -match '^(\d+)(d)$') {Format-DailyDetails $accountingData -Commits $commitData; return }
+elseif ($quick -or $lookback -match '^(\d+)(w)$') {Format-DailySummary $accountingData -Commits $commitData; return }
+elseif ($summary) {return}
 
