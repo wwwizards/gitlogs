@@ -1,0 +1,100 @@
+
+
+--------------------------------------------------------------------------------
+	 ###   FORDHAM IT - DEVOPS: AUTOMATION TEAM REPORT  ###
+--------------------------------------------------------------------------------
+ User: a-jnegron9
+ Name: Negron, Joseph 
+ Mail: 
+ Date: Sunday, November 12, 2023
+ Path: //it-auto-admin01/D:/PROJECTS/automation/F5
+  URL: https://dev.azure.com/FITCloudServices/Automation/_git/F5 ~Branch: main
+
+--------------------------------------------------------------------------------
+	 ###   GIT-CODE CHECK-IN MONTHLY HOURS SUMMARY REPORT   ###
+--------------------------------------------------------------------------------
+   2023-11    |  Date Range: November  	  		 |  Hours Worked: 68.4 
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+	 ###   GIT-CODE CHECK-IN WEEKLY HOURS SUMMARY REPORT   ###
+--------------------------------------------------------------------------------
+ 2023-Week45  |  Date Range: 10/30/2023 to 11/5/2023	 |  Hours Worked: 25.2
+ 2023-Week46  |  Date Range: 11/6/2023 to 11/12/2023	 |  Hours Worked: 43.2
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+	 ###   FORDHAM IT - DEVOPS: GIT-LOG DAILY DETAIL REPORT   ###
+--------------------------------------------------------------------------------
+  Count = 5  |   ~ Friday, November 3, 2023 		 |  Hours Worked: 4.4
+--------------------------------------------------------------------------------
+ ~ 15:56:10  | MOD: Update bootstrapper for DnsHelpers
+ ~ 15:09:36  | MOD: Update README.md
+ ~ 11:59:18  | MOD: Update README.md
+ ~ 11:53:35  | MOD: Updat README.md
+ ~ 11:34:13  | Initial commit with F5 project files - working demo on bash & pws
+--------------------------------------------------------------------------------
+  Count = 8  |   ~ Saturday, November 4, 2023 		 |  Hours Worked: 12.6
+--------------------------------------------------------------------------------
+ ~ 13:41:37  | MOD:Update README.md - MOD:Minor tweaks to PacMan
+ ~ 11:32:03  | MOD:Update README.md - MOD:PacMan
+ ~ 09:56:48  | MOD:Update README.md - MOD:Related Epics Table
+ ~ 09:48:24  | MOD:Update README.md - ADD:Related Epics Table
+ ~ 09:44:24  | MOD:Update README.md - MOD:Related Epics
+ ~ 09:43:12  | MOD:Update README.md - ADD:Related Epics
+ ~ 09:25:31  | MOD: split out Package Manager awsomeness - for DEV/QA/UAT clones
+ ~ 01:05:10  | ADD: script to setup dev env & tools for windows
+--------------------------------------------------------------------------------
+  Count = 2  |   ~ Sunday, November 5, 2023 		 |  Hours Worked: 8.2
+--------------------------------------------------------------------------------
+ ~ 18:09:30  | MOD:Update DnsHelpers - REF:Get-DnsRecords function
+ ~ 09:56:22  | MOD:Update PacMan.ps1 - ADD:logging capabilities to MAIN script
+--------------------------------------------------------------------------------
+  Count = 1  |   ~ Monday, November 6, 2023 		 |  Hours Worked: 1.0
+--------------------------------------------------------------------------------
+	     | *** ONLY ONE RECORD FOUND - ASSUMING AT LEAST 1-HOUR ***
+ ~ 02:50:06  | v0.3-Refactor after port to QA/UAT (server)
+--------------------------------------------------------------------------------
+  Count = 1  |   ~ Tuesday, November 7, 2023 		 |  Hours Worked: 1.0
+--------------------------------------------------------------------------------
+	     | *** ONLY ONE RECORD FOUND - ASSUMING AT LEAST 1-HOUR ***
+ ~ 02:16:26  | MOD: DnsTools refactor helpers
+--------------------------------------------------------------------------------
+  Count = 2  |   ~ Wednesday, November 8, 2023 		 |  Hours Worked: 7.4
+--------------------------------------------------------------------------------
+ ~ 16:14:08  | MOD: refactor helper librariess --> v0.2 for windows
+ ~ 08:49:52  | MODs: DnsHelpers & VipHelpers refactor for moving goal-lines...
+--------------------------------------------------------------------------------
+  Count = 1  |   ~ Thursday, November 9, 2023 		 |  Hours Worked: 1.0
+--------------------------------------------------------------------------------
+	     | *** ONLY ONE RECORD FOUND - ASSUMING AT LEAST 1-HOUR ***
+ ~ 07:58:58  | MOD: Milestone v0.2 - Working Demo of Get-NextVip (and clean)
+--------------------------------------------------------------------------------
+  Count = 2  |   ~ Friday, November 10, 2023 		 |  Hours Worked: 4.0
+--------------------------------------------------------------------------------
+ ~ 08:29:28  | MOD:3rd refactor of DNS wildcard search functionality + misc twea
+ ~ 04:27:31  | ADD: new function to use dnscmd for wildcard dns
+--------------------------------------------------------------------------------
+  Count = 7  |   ~ Saturday, November 11, 2023 		 |  Hours Worked: 16.1
+--------------------------------------------------------------------------------
+ ~ 22:05:36  | MOD... last commit and signing off
+ ~ 19:28:32  | ADD: git-Rollback-README.md - maybe you can guess why...
+ ~ 19:00:05  | MOD: time-tracker-v03 - added error checking and function headers
+ ~ 16:18:26  | NEW: time-tracker-v03
+ ~ 11:46:18  | POC: split time-tracker on its own and refactor for additional co
+ ~ 09:13:54  | POC: time tracking report using git log as input
+ ~ 06:01:43  | MOD: catchup for week - refine wildcard dns functionality
+--------------------------------------------------------------------------------
+  Count = 9  |   ~ Sunday, November 12, 2023 		 |  Hours Worked: 12.7
+--------------------------------------------------------------------------------
+ ~ 17:03:22  | LOG: signing off on a good note...
+ ~ 16:53:00  | MOD: merged previous versions & dleaned up orphans
+ ~ 16:43:45  | MOD: new report header -v04
+ ~ 15:32:09  | MOD: tweaked numeric formatting -v04
+ ~ 15:17:45  | MOD: tweaked summary formatting -v04
+ ~ 14:02:48  | MOD: added Weekly & Monthly Summaries-v04
+ ~ 12:15:58  | MOD: added formatting to DailyDetails-v04
+ ~ 11:28:12  | MOD... tweaked both versions and combined best of breed into -v04
+ ~ 04:18:24  | MOD... first commit and signing on
+--------------------------------------------------------------------------------
