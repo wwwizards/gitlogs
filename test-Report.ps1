@@ -7,10 +7,10 @@ function Run-And-SaveReport {
     )
 
     Write-Host "`n`n`n----------------------------------------------------------------------------"
-    Write-Host "`t ### Executing Report-HoursWorked.ps1 with lookback period: $Lookback"
+    Write-Host "`t ### Executing Report-TimeLogs.ps1 with lookback period: $Lookback"
     Write-Host "----------------------------------------------------------------------------`n`n`n"
 
-    $scriptPath = ".\Report-HoursWorked.ps1"
+    $scriptPath = ".\Report-TimeLogs.ps1"
 
     if (Test-Path $scriptPath) {
         $output = & $scriptPath -lookback $Lookback

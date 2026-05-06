@@ -1,14 +1,14 @@
 
 
 --------------------------------------------------------------------------------
-	 ###   FORDHAM IT - DEVOPS: AUTOMATION TEAM REPORT  ###
+	 ###   GIT-LOG TIME REPORT  ###
 --------------------------------------------------------------------------------
- User: a-jnegron9
- Name: Negron, Joseph 
- Mail: 
+ User: wwwizards
+ Name: Joe Negron
+ Mail: (github.com/wwwizards)
  Date: Sunday, November 12, 2023
- Path: //it-auto-admin01/D:/PROJECTS/automation/F5
-  URL: https://dev.azure.com/FITCloudServices/Automation/_git/F5 ~Branch: main
+ Path: ~/projects/gitlogs
+  URL: https://github.com/wwwizards/gitlogs  Branch: main
 
 --------------------------------------------------------------------------------
 	 ###   GIT-CODE CHECK-IN MONTHLY HOURS SUMMARY REPORT   ###
@@ -25,7 +25,7 @@
 
 
 --------------------------------------------------------------------------------
-	 ###   FORDHAM IT - DEVOPS: GIT-LOG DAILY DETAIL REPORT   ###
+	 ###   GIT-LOG DAILY DETAIL REPORT   ###
 --------------------------------------------------------------------------------
   Count = 5  |   ~ Friday, November 3, 2023 		 |  Hours Worked: 4.4
 --------------------------------------------------------------------------------

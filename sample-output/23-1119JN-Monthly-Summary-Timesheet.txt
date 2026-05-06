@@ -1,17 +1,17 @@
 
 
 --------------------------------------------------------------------------------
-	 ###   FORDHAM IT - DEVOPS: AUTOMATION TEAM REPORT  ###
+	 ###   GIT-LOG TIME REPORT  ###
 --------------------------------------------------------------------------------
-   User: a-jnegron9
+   User: wwwizards
    Name: Joe Negron
-   Mail: jnegron9@fordham.edu
+   Mail: (github.com/wwwizards)
    Date: Sunday, November 19, 2023
-  Local: //it-auto-admin01/D:/PROJECTS/automation/F5
- Remote: https://dev.azure.com/FITCloudServices/Automation/_git/F5 
+  Local: ~/projects/gitlogs
+ Remote: https://github.com/wwwizards/gitlogs
  Branch: main
 
-  Report: .\Report-TimeTracker.ps1 1m -summary >23-1119JN-Monthly-Summary-Timesheet.txt  
+  Report: .\Report-TimeLogs.ps1 -lookback 1m -summary >23-1119JN-Monthly-Summary-Timesheet.txt  
    Range: Thursday, October 19, 2023 through Sunday, November 19, 2023
 
 --------------------------------------------------------------------------------
