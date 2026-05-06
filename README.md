@@ -111,11 +111,19 @@ See [`sample-output/`](sample-output/) for full report examples.
 
 ## Roadmap
 
-- [ ] Pester test suite (`Report-TimeLogs.Tests.ps1`)
+- [x] Pester test suite (`Report-TimeLogs.Tests.ps1`)
 - [ ] Package as a PowerShell module (`.psm1`)
 - [ ] Multi-repo walker — aggregate hours across all git repos under a root directory
-- [ ] Python port (`gitlogs.py`) for cross-platform use without pwsh dependency
 - [ ] Session detection — treat gaps > N minutes as separate work sessions
+- [ ] Python port (`gitlogs.py`) for cross-platform use without pwsh dependency
+  - [ ] `--export csv|json` for piping into downstream tooling
+  - [ ] **Invoice module** (`gitlogs[invoice]`) — map timesheet output to invoice line items
+    and push to a billing API; candidate targets:
+    - [QuickBooks Online REST API](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/invoice)
+      (`POST /v3/company/{realmId}/invoice`) — OAuth 2.0, `Line[]` model maps 1:1 to daily/weekly rows
+    - [FreshBooks API](https://www.freshbooks.com/api/start) — freelancer-native, cleaner auth story
+    - [Wave](https://developer.waveapps.com/hc/en-us/categories/360001114072) — free tier, GraphQL
+    - Flat-file fallback: IIF export for legacy desktop QB import
 
 ---
 
